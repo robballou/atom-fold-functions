@@ -1,0 +1,39 @@
+# See https://atom.io/docs/latest/creating-a-package#menus for more details
+'context-menu':
+  'atom-text-editor': [
+    {
+      'label': 'Toggle function folding'
+      'command': 'fold-functions:toggle'
+    },
+    {
+      'label': 'Fold functions'
+      'command': 'fold-functions:fold'
+    },
+    {
+      'label': 'Unfold functions'
+      'command': 'fold-functions:unfold'
+    }
+
+  ]
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'atom-fold-functions'
+      'submenu': [
+        {
+          'label': 'Fold'
+          'command': 'fold-functions:fold'
+        },
+        {
+          'label': 'Toggle'
+          'command': 'fold-functions:toggle'
+        },
+        {
+          'label': 'Unfold'
+          'command': 'fold-functions:unfold'
+        }
+      ]
+    ]
+  }
+]
