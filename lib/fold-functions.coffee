@@ -70,9 +70,8 @@ module.exports = AtomFoldFunctions =
     if text.length > 0
       # scan the text line to see if there is a function somewhere
       for pos in [0..text.length]
-        scopes = editor.scopesForBufferPosition([row, pos])
-
+        scopes = editor.scopeDescriptorForBufferPosition([row, pos])
         # see if we found the scope we're after...
-        found = true for item in scopes when item.startsWith(scope)
+        found = true for item in scopes.scopes when item.startsWith(scope)
         if found then break
     found
