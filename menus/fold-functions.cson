@@ -19,7 +19,7 @@
   {
     'label': 'Packages'
     'submenu': [
-      'label': 'atom-fold-functions'
+      'label': 'Fold Functions'
       'submenu': [
         {
           'label': 'Fold'
