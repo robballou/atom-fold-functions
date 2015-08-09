@@ -5,6 +5,11 @@ module.exports = AtomFoldFunctions =
   subscriptions: null
   indentLevel: null
 
+  config:
+    autofold:
+      type: 'boolean'
+      default: false
+
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a
     # CompositeDisposable
@@ -19,6 +24,11 @@ module.exports = AtomFoldFunctions =
 
     @subscriptions.add atom.commands.add 'atom-workspace',
       'fold-functions:unfold': => @unfold()
+
+    if atom.config.get('fold-functions.autofold')
+      atom.workspace.observeTextEditors (editor) =>
+        editor.displayBuffer.tokenizedBuffer.onDidTokenize =>
+          @fold('fold', editor)
 
   deactivate: ->
     @subscriptions.dispose()
