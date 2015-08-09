@@ -7,3 +7,13 @@ Folds functions within your code. Currently comes with a toggle, fold, and unfol
 *Note: this currently folds only those functions it finds at a single indentation (e.g. it will fold the top level functions)*
 
 Heavily inspired/influnced by [Fold Comments](https://atom.io/packages/fold-comments).
+
+## Autofolding
+
+You can turn on the auto-folding feature with the following in your configuration file:
+
+```coffescript
+"fold-functions":
+    debug: true
+    autofold: true
+```
