@@ -14,6 +14,5 @@ You can turn on the auto-folding feature with the following in your configuratio
 
 ```coffescript
 "fold-functions":
-    debug: true
     autofold: true
 ```
