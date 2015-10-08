@@ -9,6 +9,9 @@ module.exports = AtomFoldFunctions =
     autofold:
       type: 'boolean'
       default: false
+    shortfileCutoff:
+      type: 'integer'
+      default: 42
 
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a
@@ -36,6 +39,10 @@ module.exports = AtomFoldFunctions =
   fold: (action) ->
     if !action then action = 'fold'
     editor = atom.workspace.getActiveTextEditor()
+    if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
+      if shortfileCutoff > 0 and editor.getLineCount() <= shortfileCutoff
+        return
+
     @indentLevel = null
     for row in [0..editor.getLastBufferRow()]
       foldable = editor.isFoldableAtBufferRow(row)

@@ -15,4 +15,7 @@ You can turn on the auto-folding feature with the following in your configuratio
 ```coffescript
 "fold-functions":
     autofold: true
+    shortfileCutoff: 42
 ```
+
+By default, this is setup to ignore files that are under 42 lines. This can be configured by changing the `shortfileCutoff` option to a larger or smaller number. If you wish to fold all files, even short ones, you can change this option to `0`.
