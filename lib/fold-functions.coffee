@@ -86,7 +86,9 @@ module.exports = AtomFoldFunctions =
       if foldable
         hasFoldableLines = true
 
-      isFunction = @hasScopeAtBufferRow(editor, row, 'meta.function')
+      isFunction = @hasScopeAtBufferRow(editor, row,
+      'meta.function', 'meta.method.js',
+      'storage.type.arrow.js', 'entity.name.function.constructor.js')
       if foldable and isFunction and not isCommented
         if @indentLevel == null
           @indentLevel = thisIndentLevel
@@ -103,7 +105,13 @@ module.exports = AtomFoldFunctions =
   unfold: ->
     @fold('unfold')
 
-  hasScopeAtBufferRow: (editor, row, scope) ->
+  hasScopeAtBufferRow: (editor, row, scopes...) ->
+    for scope in scopes
+      if this._hasScopeAtBufferRow(editor, row, scope)
+        return true
+    false
+
+  _hasScopeAtBufferRow: (editor, row, scope) ->
     found = false
     text = editor.lineTextForBufferRow(row).trim()
     if text.length > 0
