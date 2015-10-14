@@ -31,19 +31,22 @@ module.exports = AtomFoldFunctions =
     if atom.config.get('fold-functions.autofold')
       atom.workspace.observeTextEditors (editor) =>
         editor.displayBuffer.tokenizedBuffer.onDidTokenize =>
-          @fold('fold', editor)
+          if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
+            # make sure the file is longer than the cutoff before folding
+            if shortfileCutoff > 0 and editor.getLineCount() >= shortfileCutoff
+              console.log('autofold')
+              @fold('autofold', editor)
 
   deactivate: ->
     @subscriptions.dispose()
 
-  fold: (action) ->
+  fold: (action, editor) ->
     if !action then action = 'fold'
-    editor = atom.workspace.getActiveTextEditor()
-    if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
-      if shortfileCutoff > 0 and editor.getLineCount() <= shortfileCutoff
-        return
+    if not editor
+      editor = atom.workspace.getActiveTextEditor()
 
     @indentLevel = null
+    hasFoldableLines = false
     for row in [0..editor.getLastBufferRow()]
       foldable = editor.isFoldableAtBufferRow(row)
       isFolded = editor.isFoldedAtBufferRow(row)
@@ -63,6 +66,9 @@ module.exports = AtomFoldFunctions =
       # ignore commented lines
       if isCommented
         continue
+
+      if foldable
+        hasFoldableLines = true
 
       isFunction = @hasScopeAtBufferRow(editor, row, 'meta.function')
       if foldable and isFunction and not isCommented
