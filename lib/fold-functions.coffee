@@ -12,6 +12,12 @@ module.exports = AtomFoldFunctions =
     shortfileCutoff:
       type: 'integer'
       default: 42
+    autofoldGrammars:
+      type: 'array'
+      default: []
+    autofoldIgnoreGrammars:
+      type: 'array'
+      default: ['SQL', 'CSV', 'JSON', 'CSON', 'Plain Text']
 
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a
@@ -31,10 +37,20 @@ module.exports = AtomFoldFunctions =
     if atom.config.get('fold-functions.autofold')
       atom.workspace.observeTextEditors (editor) =>
         editor.displayBuffer.tokenizedBuffer.onDidTokenize =>
+          autofoldGrammars = atom.config.get('fold-functions.autofoldGrammars')
+          grammar = editor.getGrammar()
+          if autofoldGrammars.length > 0 and grammar.name not in autofoldGrammars
+            console.log('autofold grammar not whitelisted', grammar.name)
+            return
+
+          autofoldIgnoreGrammars = atom.config.get('fold-functions.autofoldIgnoreGrammars')
+          if autofoldIgnoreGrammars.length > 0 and grammar.name in autofoldIgnoreGrammars
+            console.log('autofold ignored grammar', grammar.name)
+            return
+
           if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
             # make sure the file is longer than the cutoff before folding
             if shortfileCutoff > 0 and editor.getLineCount() >= shortfileCutoff
-              console.log('autofold')
               @fold('autofold', editor)
 
   deactivate: ->
