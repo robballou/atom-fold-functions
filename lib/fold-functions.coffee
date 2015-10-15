@@ -87,8 +87,8 @@ module.exports = AtomFoldFunctions =
         hasFoldableLines = true
 
       isFunction = @hasScopeAtBufferRow(editor, row,
-      'meta.function', 'meta.method.js',
-      'storage.type.arrow.js', 'entity.name.function.constructor.js')
+      'meta.function', 'meta.method',
+      'storage.type.arrow', 'entity.name.function.constructor')
       if foldable and isFunction and not isCommented
         if @indentLevel == null
           @indentLevel = thisIndentLevel
