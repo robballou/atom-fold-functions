@@ -2,18 +2,22 @@
 'context-menu':
   'atom-text-editor': [
     {
-      'label': 'Toggle function folding'
-      'command': 'fold-functions:toggle'
-    },
-    {
-      'label': 'Fold functions'
-      'command': 'fold-functions:fold'
-    },
-    {
-      'label': 'Unfold functions'
-      'command': 'fold-functions:unfold'
+      'label': 'Fold Functions'
+      'submenu': [
+        {
+          'label': 'Toggle function folding'
+          'command': 'fold-functions:toggle'
+        },
+        {
+          'label': 'Fold functions'
+          'command': 'fold-functions:fold'
+        },
+        {
+          'label': 'Unfold functions'
+          'command': 'fold-functions:unfold'
+        }
+      ]
     }
-
   ]
 'menu': [
   {
