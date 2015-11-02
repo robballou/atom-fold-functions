@@ -18,6 +18,9 @@ module.exports = AtomFoldFunctions =
     autofoldIgnoreGrammars:
       type: 'array'
       default: ['SQL', 'CSV', 'JSON', 'CSON', 'Plain Text']
+    skipAutofoldWhenNotFirstLine:
+      type: 'boolean'
+      default: false
 
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a
@@ -37,21 +40,40 @@ module.exports = AtomFoldFunctions =
     if atom.config.get('fold-functions.autofold')
       atom.workspace.observeTextEditors (editor) =>
         editor.displayBuffer.tokenizedBuffer.onDidTokenize =>
-          autofoldGrammars = atom.config.get('fold-functions.autofoldGrammars')
           grammar = editor.getGrammar()
+          autofold = false
+
+          # the grammar is not white listed (and there are things whitelisted)
+          autofoldGrammars = atom.config.get('fold-functions.autofoldGrammars')
           if autofoldGrammars.length > 0 and grammar.name not in autofoldGrammars
-            console.log('autofold grammar not whitelisted', grammar.name)
+            console.log('fold functions: autofold grammar not whitelisted', grammar.name)
             return
 
+          # the grammar is not in the ignore grammar list
           autofoldIgnoreGrammars = atom.config.get('fold-functions.autofoldIgnoreGrammars')
           if autofoldIgnoreGrammars.length > 0 and grammar.name in autofoldIgnoreGrammars
-            console.log('autofold ignored grammar', grammar.name)
+            console.log('fold functions: autofold ignored grammar', grammar.name)
             return
+
+          # check if the file is too short to run
 
           if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
             # make sure the file is longer than the cutoff before folding
             if shortfileCutoff > 0 and editor.getLineCount() >= shortfileCutoff
-              @fold('autofold', editor)
+              autofold = true
+
+          if atom.config.get('fold-functions.skipAutofoldWhenNotFirstLine')
+            onFirstLine = true
+            for cursor in editor.getCursors()
+              if cursor.getBufferRow() > 0
+                onFirstLine = false
+                break
+
+            if not onFirstLine
+              autofold = false
+
+          if autofold
+            @fold('autofold', editor)
 
   deactivate: ->
     @subscriptions.dispose()
