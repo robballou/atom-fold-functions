@@ -39,44 +39,46 @@ module.exports = AtomFoldFunctions =
 
     if atom.config.get('fold-functions.autofold')
       atom.workspace.observeTextEditors (editor) =>
-        editor.displayBuffer.tokenizedBuffer.onDidTokenize =>
-          grammar = editor.getGrammar()
-          autofold = false
-
-          # the grammar is not white listed (and there are things whitelisted)
-          autofoldGrammars = atom.config.get('fold-functions.autofoldGrammars')
-          if autofoldGrammars.length > 0 and grammar.name not in autofoldGrammars
-            console.log('fold functions: autofold grammar not whitelisted', grammar.name)
-            return
-
-          # the grammar is not in the ignore grammar list
-          autofoldIgnoreGrammars = atom.config.get('fold-functions.autofoldIgnoreGrammars')
-          if autofoldIgnoreGrammars.length > 0 and grammar.name in autofoldIgnoreGrammars
-            console.log('fold functions: autofold ignored grammar', grammar.name)
-            return
-
-          # check if the file is too short to run
-
-          if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
-            # make sure the file is longer than the cutoff before folding
-            if shortfileCutoff > 0 and editor.getLineCount() >= shortfileCutoff
-              autofold = true
-
-          if atom.config.get('fold-functions.skipAutofoldWhenNotFirstLine')
-            onFirstLine = true
-            for cursor in editor.getCursors()
-              if cursor.getBufferRow() > 0
-                onFirstLine = false
-                break
-
-            if not onFirstLine
-              autofold = false
-
-          if autofold
-            @fold('autofold', editor)
+        editor.displayBuffer.tokenizedBuffer.onDidTokenize => @autofold(editor)
 
   deactivate: ->
     @subscriptions.dispose()
+
+  autofold: (editor) ->
+    grammar = editor.getGrammar()
+    autofold = false
+
+    # the grammar is not white listed (and there are things whitelisted)
+    autofoldGrammars = atom.config.get('fold-functions.autofoldGrammars')
+    if autofoldGrammars.length > 0 and grammar.name not in autofoldGrammars
+      console.log('fold functions: autofold grammar not whitelisted', grammar.name)
+      return
+
+    # the grammar is not in the ignore grammar list
+    autofoldIgnoreGrammars = atom.config.get('fold-functions.autofoldIgnoreGrammars')
+    if autofoldIgnoreGrammars.length > 0 and grammar.name in autofoldIgnoreGrammars
+      console.log('fold functions: autofold ignored grammar', grammar.name)
+      return
+
+    # check if the file is too short to run
+
+    if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
+      # make sure the file is longer than the cutoff before folding
+      if shortfileCutoff > 0 and editor.getLineCount() >= shortfileCutoff
+        autofold = true
+
+    if atom.config.get('fold-functions.skipAutofoldWhenNotFirstLine')
+      onFirstLine = true
+      for cursor in editor.getCursors()
+        if cursor.getBufferRow() > 0
+          onFirstLine = false
+          break
+
+      if not onFirstLine
+        autofold = false
+
+    if autofold
+      @fold('autofold', editor)
 
   fold: (action, editor) ->
     if !action then action = 'fold'
