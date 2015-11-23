@@ -51,6 +51,13 @@ module.exports = AtomFoldFunctions =
     @subscriptions.dispose()
 
   autofold: (editor) ->
+    if not editor
+      editor = atom.workspace.getActiveTextEditor()
+
+    # just in case there really is not an editor, don't try to autofold...
+    if not editor
+      return
+
     grammar = editor.getGrammar()
     autofold = false
 
