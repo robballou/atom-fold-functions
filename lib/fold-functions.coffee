@@ -142,6 +142,10 @@ module.exports = AtomFoldFunctions =
     if not editor
       editor = atom.workspace.getActiveTextEditor()
 
+    if not editor
+      @debugMessage('no editor, skipping')
+      return
+
     @debugMessage('fold functions:', action)
     @indentLevel = @indentLevel || null
     hasFoldableLines = false
