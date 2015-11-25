@@ -100,7 +100,7 @@ module.exports = AtomFoldFunctions =
         autofold = false
 
     if autofold
-      console.log('fold functions: autofolding')
+      console.log('fold functions: start autofolding')
       @fold('autofold', editor)
 
   # Figure out the number of functions in this file.
@@ -150,16 +150,19 @@ module.exports = AtomFoldFunctions =
       editor = atom.workspace.getActiveTextEditor()
 
     if not editor
-      @debugMessage('no editor, skipping')
+      @debugMessage('fold functions: ’no editor, skipping')
       return
 
-    @debugMessage('fold functions:', action)
+    @debugMessage('fold functions: action=', action)
     @indentLevel = @indentLevel || null
     hasFoldableLines = false
+    lines = fold = unfold = toggle = 0
     for row in [0..editor.getLastBufferRow()]
       foldable = editor.isFoldableAtBufferRow(row)
       isFolded = editor.isFoldedAtBufferRow(row)
       isCommented = editor.isBufferRowCommented(row)
+
+      lines++
 
       # check the indent level for this line and make sure it is the same as
       # previous lines where we found functions
@@ -179,18 +182,28 @@ module.exports = AtomFoldFunctions =
       if foldable
         hasFoldableLines = true
 
-      isFunction = @hasScopeAtBufferRow(editor, row,
-      'meta.function', 'meta.method',
-      'storage.type.arrow', 'entity.name.function.constructor')
+      isFunction = @hasScopeAtBufferRow(
+        editor,
+        row,
+        'meta.function',
+        'meta.method',
+        'storage.type.arrow',
+        'entity.name.function.constructor'
+      )
+      @debugMessage('fold functions: is foldable', (foldable and isFunction and not isCommented))
       if foldable and isFunction and not isCommented
         if @indentLevel == null
           @indentLevel = thisIndentLevel
         if action == 'toggle'
           editor.toggleFoldAtBufferRow(row)
+          toggle++
         else if action == 'unfold' and isFolded
           editor.unfoldBufferRow(row)
+          unfold++
         else if !editor.isFoldedAtBufferRow(row)
           editor.foldBufferRow(row)
+          fold++
+    @debugMessage('fold functions: done scanning ' + lines + ' lines (' + fold + ':' + unfold + ':' + toggle + ')')
 
   toggle: ->
     @fold('toggle')
@@ -198,20 +211,33 @@ module.exports = AtomFoldFunctions =
   unfold: ->
     @fold('unfold')
 
-  hasScopeAtBufferRow: (editor, row, scopes...) ->
-    for scope in scopes
-      if this._hasScopeAtBufferRow(editor, row, scope)
-        return true
-    false
-
-  _hasScopeAtBufferRow: (editor, row, scope) ->
-    found = false
+  # get all the scopes in a buffer row
+  getScopesForBufferRow: (editor, row) ->
+    scopes = []
     text = editor.lineTextForBufferRow(row).trim()
     if text.length > 0
       # scan the text line to see if there is a function somewhere
       for pos in [0..text.length]
-        scopes = editor.scopeDescriptorForBufferPosition([row, pos])
-        # see if we found the scope we're after...
-        found = true for item in scopes.scopes when item.startsWith(scope)
-        if found then break
-    found
+        positionScopes = editor.scopeDescriptorForBufferPosition([row, pos])
+        for currentScope in positionScopes.scopes
+          scopes.push(currentScope) if currentScope not in scopes
+    scopes
+
+  # Check the scopes for this buffer row to see if it matches what we want
+  hasScopeAtBufferRow: (editor, row, scopes...) ->
+    rowScopes = @getScopesForBufferRow(editor, row)
+    for scope in scopes
+      # incase there is an exact match, return quickly
+      return true if scope in rowScopes
+
+      # if not, we need to look at each piece of the scope to see if they match
+      # using startsWith is problematic for things like 'meta.function-call'
+      # would get folded instead of just 'meta.function'
+      pieces = scope.split('.')
+      for rowScope in rowScopes
+        rowScopePieces = rowScope.split('.')
+        match = true
+        match = (false for piece, i in pieces when rowScopePieces[i] != piece)
+        if match
+          return true
+    false
