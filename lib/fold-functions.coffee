@@ -100,7 +100,7 @@ module.exports = AtomFoldFunctions =
         autofold = false
 
     if autofold
-      console.log('fold functions: start autofolding')
+      @debugMessage('fold functions: start autofolding')
       @fold('autofold', editor)
 
   # Figure out the number of functions in this file.
@@ -138,7 +138,6 @@ module.exports = AtomFoldFunctions =
         if @indentLevel == null
           @indentLevel = thisIndentLevel
         functionCount++
-        console.log(editor.lineTextForBufferRow(row))
     functionCount
 
   debugMessage: ->
