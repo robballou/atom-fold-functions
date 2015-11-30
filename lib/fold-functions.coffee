@@ -56,7 +56,7 @@ module.exports = AtomFoldFunctions =
 
     # just in case there really is not an editor, don't try to autofold...
     if not editor
-      return
+      return false
 
     grammar = editor.getGrammar()
     autofold = false
@@ -65,13 +65,13 @@ module.exports = AtomFoldFunctions =
     autofoldGrammars = atom.config.get('fold-functions.autofoldGrammars')
     if autofoldGrammars.length > 0 and grammar.name not in autofoldGrammars
       @debugMessage('fold functions: autofold grammar not whitelisted', grammar.name)
-      return
+      return false
 
     # the grammar is not in the ignore grammar list
     autofoldIgnoreGrammars = atom.config.get('fold-functions.autofoldIgnoreGrammars')
     if autofoldIgnoreGrammars.length > 0 and grammar.name in autofoldIgnoreGrammars
       @debugMessage('fold functions: autofold ignored grammar', grammar.name)
-      return
+      return false
 
     # check if the file is too short to run
     if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
@@ -102,6 +102,8 @@ module.exports = AtomFoldFunctions =
     if autofold
       @debugMessage('fold functions: start autofolding')
       @fold('autofold', editor)
+      return true
+    false
 
   # Figure out the number of functions in this file.
   count: (editor) ->
