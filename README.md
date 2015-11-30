@@ -1,5 +1,7 @@
 # Fold Functions
 
+![build status](https://travis-ci.org/robballou/atom-fold-functions.svg)
+
 Folds functions within your code. Currently comes with a toggle, fold, and unfold option that will look for functions marked with 'meta.function'. Handy because it won't fold things like comments associated with functions.
 
 ![screenshot](http://robballou.com/i/fold.gif)
