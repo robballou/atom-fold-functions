@@ -138,6 +138,7 @@ module.exports = AtomFoldFunctions =
         if @indentLevel == null
           @indentLevel = thisIndentLevel
         functionCount++
+        console.log(editor.lineTextForBufferRow(row))
     functionCount
 
   debugMessage: ->
@@ -226,6 +227,7 @@ module.exports = AtomFoldFunctions =
   # Check the scopes for this buffer row to see if it matches what we want
   hasScopeAtBufferRow: (editor, row, scopes...) ->
     rowScopes = @getScopesForBufferRow(editor, row)
+    @debugMessage(row, rowScopes)
     for scope in scopes
       # incase there is an exact match, return quickly
       return true if scope in rowScopes
@@ -237,7 +239,11 @@ module.exports = AtomFoldFunctions =
       for rowScope in rowScopes
         rowScopePieces = rowScope.split('.')
         match = true
-        match = (false for piece, i in pieces when rowScopePieces[i] != piece)
+        for piece, i in pieces
+          match = false if rowScopePieces[i] != piece
+          if not match
+            break
         if match
+          @debugMessage('match for', pieces, rowScopePieces)
           return true
     false
