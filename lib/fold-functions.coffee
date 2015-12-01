@@ -83,15 +83,13 @@ module.exports = AtomFoldFunctions =
     # line of the file.
     if autofold and atom.config.get('fold-functions.skipAutofoldWhenNotFirstLine')
       onFirstLine = true
-      bufferRow = null
       for cursor in editor.getCursors()
         if cursor.getBufferRow() > 0
-          bufferRow = cursor.getBufferRow()
           onFirstLine = false
           break
 
       if not onFirstLine
-        @debugMessage('fold function: not on first line, skipping autofold', bufferRow)
+        @debugMessage('fold function: not on first line, skipping autofold')
         autofold = false
 
     # figure out if we should skip autofolding because there is only one
@@ -192,8 +190,7 @@ module.exports = AtomFoldFunctions =
         'meta.function',
         'meta.method',
         'storage.type.arrow',
-        'entity.name.function.constructor',
-        'support.function'
+        'entity.name.function.constructor'
       )
       @debugMessage('fold functions: is foldable', (foldable and isFunction and not isCommented))
       if foldable and isFunction and not isCommented
