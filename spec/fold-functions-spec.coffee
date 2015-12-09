@@ -85,3 +85,29 @@ describe 'fold functions methods', ->
     ]
     for expectedScope in expected
       expect(scopes).toContain expectedScope
+
+  it 'scopeInScopes() returns true when matching', ->
+    testScopes = ['meta.function', 'meta.method', 'storage.type.arrow', 'entity.name.function.constructor']
+    scopes = ['meta.function']
+    expect(AtomFoldFunctions.scopeInScopes(scopes, testScopes)).toBe.true
+    scopes = [
+      'text.html.php.drupal',
+      'meta.embedded.block.php',
+      'source.phpmeta.function.php',
+      'storage.type.function.php',
+      'entity.name.function.php',
+      'punctuation.definition.parameters.begin.php',
+      'meta.function.arguments.php',
+      'meta.function.argument.no-default.php',
+      'variable.other.php',
+      'punctuation.definition.variable.php',
+      'meta.function.argument.array.php',
+      'storage.type.php',
+      'keyword.operator.assignment.php',
+      'support.function.construct.php',
+      'punctuation.definition.array.begin.php',
+      'punctuation.definition.array.end.php',
+      'punctuation.definition.parameters.end.php',
+      'punctuation.section.scope.begin.php'
+    ]
+    expect(AtomFoldFunctions.scopeInScopes(scopes, testScopes)).toBe.true

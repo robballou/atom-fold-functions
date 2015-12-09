@@ -43,6 +43,9 @@ module.exports = AtomFoldFunctions =
     @subscriptions.add atom.commands.add 'atom-workspace',
       'fold-functions:unfold': => @unfold()
 
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'fold-functions:scopes': => @scopes()
+
     if atom.config.get('fold-functions.autofold')
       atom.workspace.observeTextEditors (editor) =>
         editor.displayBuffer.tokenizedBuffer.onDidTokenize => @autofold(editor)
@@ -213,6 +216,14 @@ module.exports = AtomFoldFunctions =
   unfold: ->
     @fold('unfold')
 
+  scopes: ->
+    editor = atom.workspace.getActiveTextEditor()
+    position = editor.getCursorBufferPosition()
+    scopes = @getScopesForBufferRow(editor, position.row)
+    list = scopes.map (item) -> "* #{item}"
+    content = "Scopes at Row\n#{list.join('\n')}"
+    atom.notifications.addInfo(content, dismissable: true)
+
   # get all the scopes in a buffer row
   getScopesForBufferRow: (editor, row) ->
     scopes = []
@@ -228,7 +239,10 @@ module.exports = AtomFoldFunctions =
   # Check the scopes for this buffer row to see if it matches what we want
   hasScopeAtBufferRow: (editor, row, scopes...) ->
     rowScopes = @getScopesForBufferRow(editor, row)
-    @debugMessage(row, rowScopes)
+    return @scopeInScopes(rowScopes, scopes)
+
+  scopeInScopes: (rowScopes, scopes) ->
+    @debugMessage(scopes, rowScopes)
     for scope in scopes
       # incase there is an exact match, return quickly
       return true if scope in rowScopes
