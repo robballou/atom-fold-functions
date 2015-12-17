@@ -195,7 +195,9 @@ module.exports = AtomFoldFunctions =
         'storage.type.arrow',
         'entity.name.function.constructor'
       )
-      @debugMessage('fold functions: is foldable', (foldable and isFunction and not isCommented))
+      @debugMessage('fold functions: is foldable', (foldable and isFunction and not isCommented), 'foldable', foldable, 'isFunction', isFunction, 'isCommented', isCommented)
+      if isFunction and not (foldable and isFunction and not isCommented)
+        @debugMessage('fold functions: line is a function, but cannot be folded', foldable, isCommented)
       if foldable and isFunction and not isCommented
         if @indentLevel == null
           @indentLevel = thisIndentLevel
@@ -216,10 +218,12 @@ module.exports = AtomFoldFunctions =
   unfold: ->
     @fold('unfold')
 
+  # Log the scopes and copy them to the clipboard.
   scopes: ->
     editor = atom.workspace.getActiveTextEditor()
     position = editor.getCursorBufferPosition()
     scopes = @getScopesForBufferRow(editor, position.row)
+    atom.clipboard.write(list.join(', '))
     list = scopes.map (item) -> "* #{item}"
     content = "Scopes at Row\n#{list.join('\n')}"
     atom.notifications.addInfo(content, dismissable: true)
