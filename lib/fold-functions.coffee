@@ -161,11 +161,14 @@ module.exports = AtomFoldFunctions =
     @debugMessage('fold functions: action=', action)
     @indentLevel = @indentLevel || null
     hasFoldableLines = false
-    lines = fold = unfold = toggle = 0
+    lines = foldableLines = fold = unfold = toggle = 0
+    bufferHasFoldableLines = false
     for row in [0..editor.getLastBufferRow()]
       foldable = editor.isFoldableAtBufferRow(row)
       isFolded = editor.isFoldedAtBufferRow(row)
       isCommented = editor.isBufferRowCommented(row)
+
+      bufferHasFoldableLines = true if foldable
 
       lines++
 
@@ -199,6 +202,7 @@ module.exports = AtomFoldFunctions =
       if isFunction and not (foldable and isFunction and not isCommented)
         @debugMessage('fold functions: line is a function, but cannot be folded', foldable, isCommented)
       if foldable and isFunction and not isCommented
+        foldableLines++
         if @indentLevel == null
           @indentLevel = thisIndentLevel
         if action == 'toggle'
@@ -211,6 +215,7 @@ module.exports = AtomFoldFunctions =
           editor.foldBufferRow(row)
           fold++
     @debugMessage('fold functions: done scanning ' + lines + ' lines (' + fold + ':' + unfold + ':' + toggle + ')')
+    @debugMessage('foldable lines: ' + foldableLines)
 
   toggle: ->
     @fold('toggle')
