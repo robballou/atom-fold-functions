@@ -48,17 +48,21 @@ module.exports = AtomFoldFunctions =
 
     if atom.config.get('fold-functions.autofold')
       atom.workspace.observeTextEditors (editor) =>
-        editor.displayBuffer.tokenizedBuffer.onDidTokenize => @autofold(editor)
+        # editor.displayBuffer.tokenizedBuffer.onDidTokenize => @autofold(editor)
+        editor.tokenizedBuffer.onDidTokenize => @autofold(editor)
+        # editor.onDidChangeGrammar => @autofold(editor)
 
   deactivate: ->
     @subscriptions.dispose()
 
   autofold: (editor) ->
+    @debugMessage('fold functions: autofold')
     if not editor
       editor = atom.workspace.getActiveTextEditor()
 
     # just in case there really is not an editor, don't try to autofold...
     if not editor
+      @debugMessage('fold functions: no editor, not autofolding...')
       return false
 
     grammar = editor.getGrammar()
@@ -66,21 +70,26 @@ module.exports = AtomFoldFunctions =
 
     # the grammar is not white listed (and there are things whitelisted)
     autofoldGrammars = atom.config.get('fold-functions.autofoldGrammars')
-    if autofoldGrammars.length > 0 and grammar.name not in autofoldGrammars
+    if autofoldGrammars and autofoldGrammars.length > 0 and grammar.name not in autofoldGrammars
       @debugMessage('fold functions: autofold grammar not whitelisted', grammar.name)
       return false
 
     # the grammar is not in the ignore grammar list
     autofoldIgnoreGrammars = atom.config.get('fold-functions.autofoldIgnoreGrammars')
-    if autofoldIgnoreGrammars.length > 0 and grammar.name in autofoldIgnoreGrammars
+    if autofoldIgnoreGrammars and autofoldIgnoreGrammars.length > 0 and grammar.name in autofoldIgnoreGrammars
       @debugMessage('fold functions: autofold ignored grammar', grammar.name)
       return false
 
     # check if the file is too short to run
-    if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff')
+    if shortfileCutoff = atom.config.get('fold-functions.shortfileCutoff', 42)
       # make sure the file is longer than the cutoff before folding
-      if shortfileCutoff > 0 and editor.getLineCount() >= shortfileCutoff
+      if (shortfileCutoff > 0 and editor.getLineCount() >= shortfileCutoff)
+        @debugMessage('fold functions: autofold turned on')
         autofold = true
+    # if shortfileCutoff = 0/false/-1 then we should still turn on autofolding
+    else
+      @debugMessage('fold functions: autofold turned on')
+      autofold = true
 
     # figure out if we should skip autofolding because we are not on the first
     # line of the file.
@@ -105,8 +114,9 @@ module.exports = AtomFoldFunctions =
     if autofold
       @debugMessage('fold functions: start autofolding')
       @fold('autofold', editor)
-      return true
-    false
+      @debugMessage('fold functions: autofolded')
+      autofold = true
+    autofold
 
   # Figure out the number of functions in this file.
   count: (editor) ->
@@ -155,8 +165,8 @@ module.exports = AtomFoldFunctions =
       editor = atom.workspace.getActiveTextEditor()
 
     if not editor
-      @debugMessage('fold functions: ’no editor, skipping')
-      return
+      @debugMessage('fold functions: no editor, skipping')
+      return false
 
     @debugMessage('fold functions: action=', action)
     @indentLevel = @indentLevel || null
@@ -164,9 +174,9 @@ module.exports = AtomFoldFunctions =
     lines = foldableLines = fold = unfold = toggle = 0
     bufferHasFoldableLines = false
     for row in [0..editor.getLastBufferRow()]
-      foldable = editor.isFoldableAtBufferRow(row)
-      isFolded = editor.isFoldedAtBufferRow(row)
-      isCommented = editor.isBufferRowCommented(row)
+      foldable = editor.isFoldableAtBufferRow row
+      isFolded = editor.isFoldedAtBufferRow row
+      isCommented = editor.isBufferRowCommented row
 
       bufferHasFoldableLines = true if foldable
 
@@ -198,24 +208,32 @@ module.exports = AtomFoldFunctions =
         'storage.type.arrow',
         'entity.name.function.constructor'
       )
-      @debugMessage('fold functions: is foldable', (foldable and isFunction and not isCommented), 'foldable', foldable, 'isFunction', isFunction, 'isCommented', isCommented)
+      @debugMessage 'fold functions: is foldable',
+        lines,
+        (foldable and isFunction and not isCommented),
+        'foldable', foldable,
+        'isFunction', isFunction,
+        'isCommented', isCommented
       if isFunction and not (foldable and isFunction and not isCommented)
-        @debugMessage('fold functions: line is a function, but cannot be folded', foldable, isCommented)
-      if foldable and isFunction and not isCommented
+        @debugMessage 'fold functions: line is a function, but cannot be folded', foldable, isCommented
+      else if isFunction and foldable and not isCommented
+        @debugMessage '?'
         foldableLines++
         if @indentLevel == null
           @indentLevel = thisIndentLevel
+          @debugMessage 'fold functions: indentLevel set at', @indentLevel
         if action == 'toggle'
-          editor.toggleFoldAtBufferRow(row)
+          editor.toggleFoldAtBufferRow row
           toggle++
         else if action == 'unfold' and isFolded
-          editor.unfoldBufferRow(row)
+          editor.unfoldBufferRow row
           unfold++
-        else if !editor.isFoldedAtBufferRow(row)
-          editor.foldBufferRow(row)
+        else if !editor.isFoldedAtBufferRow row
+          editor.foldBufferRow row
           fold++
     @debugMessage('fold functions: done scanning ' + lines + ' lines (' + fold + ':' + unfold + ':' + toggle + ')')
     @debugMessage('foldable lines: ' + foldableLines)
+    @debugMessage('indentLevel: ' + @indentLevel)
 
   toggle: ->
     @fold('toggle')
@@ -228,7 +246,7 @@ module.exports = AtomFoldFunctions =
     editor = atom.workspace.getActiveTextEditor()
     position = editor.getCursorBufferPosition()
     scopes = @getScopesForBufferRow(editor, position.row)
-    atom.clipboard.write(list.join(', '))
+    atom.clipboard.write(scopes.join(', '))
     list = scopes.map (item) -> "* #{item}"
     content = "Scopes at Row\n#{list.join('\n')}"
     atom.notifications.addInfo(content, dismissable: true)
@@ -237,7 +255,7 @@ module.exports = AtomFoldFunctions =
   getScopesForBufferRow: (editor, row) ->
     scopes = []
     text = editor.lineTextForBufferRow(row).trim()
-    if text.length > 0
+    if text and text.length > 0
       # scan the text line to see if there is a function somewhere
       for pos in [0..text.length]
         positionScopes = editor.scopeDescriptorForBufferPosition([row, pos])
