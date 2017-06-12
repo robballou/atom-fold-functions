@@ -48,7 +48,6 @@ module.exports = AtomFoldFunctions =
 
     if atom.config.get('fold-functions.autofold')
       atom.workspace.observeTextEditors (editor) =>
-        # editor.displayBuffer.tokenizedBuffer.onDidTokenize => @autofold(editor)
         editor.tokenizedBuffer.onDidTokenize => @autofold(editor)
         # editor.onDidChangeGrammar => @autofold(editor)
 
@@ -206,7 +205,8 @@ module.exports = AtomFoldFunctions =
         'meta.function',
         'meta.method',
         'storage.type.arrow',
-        'entity.name.function.constructor'
+        'entity.name.function',
+        'support.function',
       )
       @debugMessage 'fold functions: is foldable',
         lines,
