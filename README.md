@@ -45,3 +45,15 @@ This module uses level language scopes to define what constitutes a function. Si
   "fold-functions":
     foldScopes: ['meta.something']
 ```
+
+By default, this package folds on:
+
+```coffescript
+[
+  'meta.function',
+  'meta.method',
+  'storage.type.arrow',
+  'entity.name.function',
+  'support.function'
+]
+```
