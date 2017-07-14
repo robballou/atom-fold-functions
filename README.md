@@ -8,7 +8,7 @@ Folds functions within your code. Currently comes with a toggle, fold, and unfol
 
 *Note: this currently folds only those functions it finds at a single indentation (e.g. it will fold the top level functions)*
 
-Heavily inspired/influenced by [Fold Comments](https://atom.io/packages/fold-comments).
+Heavily inspired/influenced by [Fold Comments](https://atom.io/packages/fold-comments). This package uses the "scopes" defined by a language instead of things like ctags.
 
 ## Autofolding
 
@@ -32,3 +32,16 @@ Autofolding also has the following options:
 2. `autofoldIgnoreGrammars` allows you to specify grammar names for grammars you *do not want to autofold*. This fires after `autofoldGrammars` and does have a default value (see above).
 3. `skipAutofoldWhenNotFirstLine` will stop autofolding if the line cursor is not the first line in the buffer. This will help with searching finding a line and folding it out-of-sight.
 4. `skipAutofoldWhenOnlyOneFunction` will stop autofolding if there is only one top-level function in a file. Handy for JavaScript!
+
+## Configurable Scopes (NEW!)
+
+This module uses level language scopes to define what constitutes a function. Since this varies greatly by language, the package now exposes options for specifying scopes including *by language*!
+
+```coffescript
+"*":
+  "fold-functions":
+    foldScopes: ['meta.function']
+"source.php":
+  "fold-functions":
+    foldScopes: ['meta.something']
+```

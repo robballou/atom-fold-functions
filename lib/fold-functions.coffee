@@ -27,6 +27,15 @@ module.exports = AtomFoldFunctions =
     debug:
       type: 'boolean'
       default: false
+    foldScopes:
+      type: 'array'
+      default: [
+        'meta.function',
+        'meta.method',
+        'storage.type.arrow',
+        'entity.name.function',
+        'support.function'
+      ]
 
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a
@@ -172,6 +181,11 @@ module.exports = AtomFoldFunctions =
     hasFoldableLines = false
     lines = foldableLines = fold = unfold = toggle = 0
     bufferHasFoldableLines = false
+
+    # get the scopes as configured
+    scopes = atom.config.get('fold-functions.foldScopes', scope: editor.getRootScopeDescriptor())
+    @debugMessage('fold functions: scopes=', scopes)
+
     for row in [0..editor.getLastBufferRow()]
       foldable = editor.isFoldableAtBufferRow row
       isFolded = editor.isFoldedAtBufferRow row
@@ -202,11 +216,7 @@ module.exports = AtomFoldFunctions =
       isFunction = @hasScopeAtBufferRow(
         editor,
         row,
-        'meta.function',
-        'meta.method',
-        'storage.type.arrow',
-        'entity.name.function',
-        'support.function',
+        scopes
       )
       @debugMessage 'fold functions: is foldable',
         lines,
@@ -264,7 +274,7 @@ module.exports = AtomFoldFunctions =
     scopes
 
   # Check the scopes for this buffer row to see if it matches what we want
-  hasScopeAtBufferRow: (editor, row, scopes...) ->
+  hasScopeAtBufferRow: (editor, row, scopes) ->
     rowScopes = @getScopesForBufferRow(editor, row)
     return @scopeInScopes(rowScopes, scopes)
 
