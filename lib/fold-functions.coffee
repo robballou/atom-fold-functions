@@ -218,6 +218,12 @@ module.exports = AtomFoldFunctions =
         row,
         scopes
       )
+      if !isFunction and row > 1
+        isFunction = @hasScopeAtBufferRow(
+          editor,
+          row - 1,
+          scopes
+        )
       @debugMessage 'fold functions: is foldable',
         lines,
         (foldable and isFunction and not isCommented),
