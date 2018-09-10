@@ -3,7 +3,7 @@
   "main": "./lib/fold-functions",
   "version": "0.10.0",
   "description": "Toggle folding on all functions",
-  "repository": "https://github.com/robballou/atom-fold-functions",
+  "repository": "git@github.com:robballou/atom-fold-functions.git",
   "license": "MIT",
   "engines": {
     "atom": ">=0.174.0 <2.0.0"
