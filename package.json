@@ -1,7 +1,7 @@
 {
   "name": "fold-functions",
   "main": "./lib/fold-functions",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Toggle folding on all functions",
   "repository": "git@github.com:robballou/atom-fold-functions.git",
   "license": "MIT",
